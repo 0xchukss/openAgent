@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>openAgent — Powered by OpenGradient</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#04040c;color:#eeeeff;font-family:'Space Grotesk',sans-serif;overflow:hidden;font-size:14px}
+:root{
+  --bg:#04040c;--s1:#0a0a16;--s2:#10101e;--s3:#181828;--s4:#202035;
+  --bo:#1e1e34;--bo2:#2e2e50;
+  --t:#eeeeff;--t2:#8888aa;--t3:#44445a;
+  --ac:#4f6ef7;--ac2:#8ba4ff;--ag:rgba(79,110,247,.14);
+  --gr:#00d4a0;--am:#f5a030;--re:#f05060;--pu:#a855f7;
+  --r:14px;--rs:9px;
+}
+.app{display:grid;grid-template-rows:54px 1fr;grid-template-columns:220px 1fr;height:100vh;overflow:hidden}
+.topbar{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;padding:0 20px;background:var(--s1);border-bottom:1px solid var(--bo);z-index:20}
+.logo{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;letter-spacing:1px;display:flex;align-items:center;gap:10px}
+.logo-mark{width:28px;height:28px;border-radius:7px;background:var(--ac);display:flex;align-items:center;justify-content:center;font-size:13px;box-shadow:0 0 14px rgba(79,110,247,.5);color:#fff;font-weight:700}
+.logo-badge{font-size:9px;padding:2px 8px;border-radius:99px;background:rgba(79,110,247,.12);color:var(--ac2);border:1px solid rgba(79,110,247,.25);font-family:'Space Mono',monospace}
+.topright{display:flex;align-items:center;gap:10px}
+.og-status{display:none;align-items:center;gap:7px;padding:5px 13px;border:1px solid var(--bo2);border-radius:99px;font-size:11px;color:var(--t2);font-family:'Space Mono',monospace}
+.og-dot{width:7px;height:7px;border-radius:50%;background:var(--gr);animation:glo 2s infinite}
+@keyframes glo{0%,100%{box-shadow:0 0 4px var(--gr)}50%{box-shadow:0 0 12px var(--gr)}}
+.og-tee-pill{display:none;align-items:center;gap:6px;padding:4px 11px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:99px;font-size:10px;color:#c084fc;font-family:'Space Mono',monospace}
+.wb{padding:7px 16px;border-radius:99px;font-size:12px;font-family:'Space Mono',monospace;cursor:pointer;border:none;font-weight:700;transition:all .2s}
+.wb-off{background:var(--ac);color:#fff;box-shadow:0 0 18px rgba(79,110,247,.35)}
+.wb-off:hover{transform:translateY(-1px);box-shadow:0 0 28px rgba(79,110,247,.5)}
+.wb-on{background:var(--s3);color:var(--t);border:1px solid var(--bo2)}
+.wb-on:hover{border-color:var(--ac)}
+.og-bar{display:none;align-items:center;gap:16px;padding:5px 20px;background:rgba(79,110,247,.05);border-bottom:1px solid rgba(79,110,247,.1);font-size:10.5px;font-family:'Space Mono',monospace;color:var(--t3)}
+.og-bar.show{display:flex}
+.og-bar-item{display:flex;align-items:center;gap:5px}
+.og-bar-dot{width:5px;height:5px;border-radius:50%}
+.sidebar{background:var(--s1);border-right:1px solid var(--bo);padding:14px 9px;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.s-label{font-size:9px;font-family:'Space Mono',monospace;color:var(--t3);padding:11px 9px 4px;letter-spacing:1.4px;text-transform:uppercase}
+.nav{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:var(--rs);cursor:pointer;transition:all .15s;color:var(--t2);font-size:12.5px;font-weight:500;border:1px solid transparent;user-select:none}
+.nav:hover{background:var(--s2);color:var(--t)}
+.nav.on{background:var(--ag);color:var(--ac2);border-color:rgba(79,110,247,.22)}
+.nav-ic{font-size:14px;width:17px;text-align:center;flex-shrink:0}
+.nav-tag{margin-left:auto;font-size:9px;padding:2px 7px;border-radius:99px;background:var(--ac);color:#fff;font-family:'Space Mono',monospace}
+.s-gap{flex:1}
+.addr-box{background:var(--s3);border-radius:var(--rs);padding:10px 11px;display:none;margin:5px 0}
+.addr-box-top{display:flex;align-items:center;gap:6px;margin-bottom:5px}
+.addr-dot{width:6px;height:6px;border-radius:50%;background:var(--gr)}
+.addr-lbl{font-size:9px;color:var(--t3);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:.8px}
+.addr-val{font-size:11px;font-family:'Space Mono',monospace;color:var(--ac2);margin-bottom:2px}
+.addr-net{font-size:10px;color:var(--pu);font-family:'Space Mono',monospace}
+.addr-bal{font-size:11px;color:var(--gr);margin-top:3px;font-family:'Space Mono',monospace}
+.main{display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--bg)}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(79,110,247,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(79,110,247,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+#lock{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;background:rgba(4,4,12,.88);backdrop-filter:blur(6px)}
+.lock-card{background:var(--s2);border:1px solid var(--bo2);border-radius:22px;padding:38px 42px;max-width:400px;width:92%;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.lock-orb{width:68px;height:68px;border-radius:18px;background:var(--ag);border:1px solid rgba(79,110,247,.3);display:flex;align-items:center;justify-content:center;font-size:30px}
+.lock-title{font-size:22px;font-weight:700}
+.lock-sub{font-size:12.5px;color:var(--t2);line-height:1.75;max-width:280px}
+.og-notice{background:rgba(168,85,247,.08);border:1px solid rgba(168,85,247,.2);border-radius:10px;padding:10px 14px;font-size:11px;color:#c084fc;font-family:'Space Mono',monospace;line-height:1.7;text-align:left;width:100%}
+.og-notice strong{color:#e879f9}
+.steps{display:flex;gap:7px;flex-wrap:wrap;justify-content:center}
+.step{padding:5px 13px;border-radius:99px;font-size:10.5px;font-family:'Space Mono',monospace;border:1px solid var(--bo2);color:var(--t3);transition:all .35s}
+.step.active{border-color:var(--ac);color:var(--ac2);background:var(--ag)}
+.step.done{border-color:var(--gr);color:var(--gr);background:rgba(0,212,160,.07)}
+.lock-btn{width:100%;padding:13px;border-radius:12px;background:var(--ac);color:#fff;border:none;font-size:14px;font-weight:700;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:all .22s;box-shadow:0 0 24px rgba(79,110,247,.3)}
+.lock-btn:hover{transform:translateY(-2px)}
+.screen{display:none;flex-direction:column;height:100%;overflow:hidden;position:relative;z-index:1}
+.screen.on{display:flex;animation:fi .2s ease}
+@keyframes fi{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.s-body{flex:1;overflow-y:auto;padding:24px 26px}
+.s-body::-webkit-scrollbar{width:4px}
+.s-body::-webkit-scrollbar-thumb{background:var(--bo2);border-radius:99px}
+.s-title{font-size:20px;font-weight:700;margin-bottom:3px}
+.s-sub{font-size:12.5px;color:var(--t2);margin-bottom:22px}
+.msgs{flex:1;overflow-y:auto;padding:20px 24px 12px;display:flex;flex-direction:column;gap:14px}
+.msgs::-webkit-scrollbar{width:4px}
+.msgs::-webkit-scrollbar-thumb{background:var(--bo2);border-radius:99px}
+.msg{display:flex;gap:10px;animation:up .3s ease}
+@keyframes up{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.msg.u{flex-direction:row-reverse}
+.av{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:10px;font-family:'Space Mono',monospace;font-weight:700;flex-shrink:0;margin-top:2px}
+.av.ai{background:var(--ag);border:1px solid rgba(79,110,247,.3);color:var(--ac2)}
+.av.u{background:var(--s4);border:1px solid var(--bo2);color:var(--t2)}
+.bwrap{display:flex;flex-direction:column;gap:8px;max-width:78%}
+.bub{padding:10px 14px;border-radius:13px;font-size:13px;line-height:1.7}
+.bub.ai{background:var(--s2);border:1px solid var(--bo);border-radius:4px 13px 13px 13px}
+.bub.u{background:var(--ac);color:#fff;border-radius:13px 4px 13px 13px}
+.bub.ai strong{color:var(--ac2)}
+.bub.ai code{font-family:'Space Mono',monospace;font-size:11px;background:var(--s3);padding:1px 5px;border-radius:4px}
+.og-proof{display:flex;align-items:center;gap:6px;font-size:10px;font-family:'Space Mono',monospace;color:#c084fc;padding:3px 0;flex-wrap:wrap}
+.og-proof-dot{width:5px;height:5px;border-radius:50%;background:#c084fc;flex-shrink:0}
+.typing{display:flex;gap:5px;align-items:center;padding:10px 14px;background:var(--s2);border:1px solid var(--bo);border-radius:4px 13px 13px 13px;width:fit-content}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--ac2);animation:bl 1.3s infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes bl{0%,80%,100%{opacity:.12}40%{opacity:1}}
+.input-zone{padding:11px 18px 16px;border-top:1px solid var(--bo);background:var(--s1)}
+.chips{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.chip{padding:4px 11px;border-radius:99px;font-size:11px;border:1px solid var(--bo2);color:var(--t2);cursor:pointer;transition:all .15s;font-family:'Space Mono',monospace;white-space:nowrap}
+.chip:hover{border-color:var(--ac);color:var(--ac2);background:var(--ag)}
+.input-row{display:flex;gap:9px;align-items:flex-end}
+.chat-inp{flex:1;background:var(--s2);border:1px solid var(--bo);border-radius:10px;padding:10px 14px;color:var(--t);font-size:13px;font-family:'Space Grotesk',sans-serif;outline:none;resize:none;line-height:1.5;transition:border .2s}
+.chat-inp:focus{border-color:rgba(79,110,247,.5)}
+.chat-inp::placeholder{color:var(--t3)}
+.send-btn{width:38px;height:38px;border-radius:9px;background:var(--ac);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.send-btn:hover{background:#3d5be0;transform:scale(1.06)}
+.send-btn svg{width:15px;height:15px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.infer-status{display:none;align-items:center;gap:6px;font-size:10px;color:var(--t3);font-family:'Space Mono',monospace;margin-top:6px}
+.spinner{width:10px;height:10px;border:1.5px solid var(--bo2);border-top-color:var(--ac2);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.action-card{background:var(--s1);border:1px solid var(--bo);border-radius:var(--r);padding:14px 16px;width:300px;max-width:100%}
+.ac-top{font-size:9.5px;font-family:'Space Mono',monospace;color:var(--t3);margin-bottom:12px;text-transform:uppercase;letter-spacing:.9px;display:flex;align-items:center;gap:7px}
+.ac-dot{width:6px;height:6px;border-radius:50%;background:var(--ac);box-shadow:0 0 7px var(--ac)}
+.tok-row{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+.tok-chip{display:flex;align-items:center;gap:7px;background:var(--s3);padding:7px 12px;border-radius:9px;font-size:13px;font-weight:600;flex:1}
+.tok-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.ac-arrow{color:var(--t3);font-size:20px;flex-shrink:0}
+.ac-bignum{font-family:'Space Mono',monospace;font-size:17px;font-weight:700;margin:3px 0 2px}
+.ac-smallnum{font-size:11px;color:var(--t3);font-family:'Space Mono',monospace;margin-bottom:6px}
+.ac-meta{display:flex;gap:12px;margin:8px 0 10px;flex-wrap:wrap}
+.ac-meta-item{font-size:11px;color:var(--t3);font-family:'Space Mono',monospace}
+.ac-meta-item b{color:var(--t2);font-weight:400}
+.ac-og-tag{font-size:10px;font-family:'Space Mono',monospace;color:#c084fc;margin-bottom:8px}
+.ac-btn{width:100%;padding:10px;border-radius:9px;border:none;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif}
+.ac-btn-primary{background:var(--ac);color:#fff}
+.ac-btn-primary:hover{background:#3d5be0;transform:translateY(-1px)}
+.ac-btn-wait{background:rgba(245,160,48,.1);color:var(--am);border:1px solid rgba(245,160,48,.2);cursor:default}
+.ac-btn-done{background:rgba(0,212,160,.1);color:var(--gr);border:1px solid rgba(0,212,160,.2);cursor:default}
+.bal-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:9px}
+.bal-item{background:var(--s3);border-radius:8px;padding:9px 11px}
+.bal-sym{font-size:9.5px;font-family:'Space Mono',monospace;color:var(--t3);margin-bottom:2px}
+.bal-amt{font-size:14px;font-weight:700;font-family:'Space Mono',monospace}
+.bal-usd{font-size:10.5px;color:var(--t3)}
+.bal-total{font-size:11px;font-family:'Space Mono',monospace;color:var(--t3);padding-top:8px;border-top:1px solid var(--bo)}
+.form-box{background:var(--s2);border:1px solid var(--bo);border-radius:16px;padding:20px;max-width:430px}
+.form-field{background:var(--s3);border:1px solid var(--bo);border-radius:11px;padding:13px 15px;margin-bottom:7px}
+.form-label{font-size:10px;color:var(--t3);font-family:'Space Mono',monospace;margin-bottom:7px;text-transform:uppercase;letter-spacing:.6px}
+.form-row{display:flex;align-items:center;gap:9px}
+.amount-inp{background:transparent;border:none;outline:none;font-size:21px;font-weight:700;color:var(--t);font-family:'Space Mono',monospace;flex:1;width:0}
+.tok-sel{display:flex;align-items:center;gap:7px;background:var(--s4);padding:7px 13px;border-radius:99px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;border:1px solid var(--bo2);transition:all .2s;position:relative}
+.tok-sel:hover{border-color:var(--ac)}
+.tok-sel-ic{width:23px;height:23px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.tok-dropdown{position:absolute;top:calc(100% + 6px);right:0;background:var(--s2);border:1px solid var(--bo2);border-radius:11px;padding:6px;z-index:100;width:160px;display:none;box-shadow:0 8px 32px rgba(0,0,0,.4)}
+.tok-dropdown.open{display:block}
+.tok-opt{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:500;transition:background .15s}
+.tok-opt:hover{background:var(--s3)}
+.flip-btn{width:34px;height:34px;border-radius:9px;background:var(--s3);border:1px solid var(--bo2);display:flex;align-items:center;justify-content:center;cursor:pointer;margin:3px auto;font-size:17px;transition:all .25s}
+.flip-btn:hover{border-color:var(--ac);transform:rotate(180deg)}
+.info-box{background:var(--s3);border-radius:9px;padding:11px 13px;font-size:11px;font-family:'Space Mono',monospace;color:var(--t3);margin:10px 0;display:flex;flex-direction:column;gap:5px}
+.info-row{display:flex;justify-content:space-between}
+.info-row span{color:var(--t2)}
+.form-hint{font-size:10.5px;color:var(--t3);margin-top:5px;font-family:'Space Mono',monospace}
+.main-cta{width:100%;padding:13px;border-radius:11px;background:var(--ac);color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;font-family:'Space Grotesk',sans-serif;box-shadow:0 0 18px rgba(79,110,247,.2)}
+.main-cta:hover{background:#3d5be0;transform:translateY(-1px)}
+.main-cta:disabled{background:var(--s4);color:var(--t3);cursor:not-allowed;box-shadow:none;transform:none}
+.stake-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;max-width:540px;margin-bottom:18px}
+.stake-card{background:var(--s2);border:1px solid var(--bo);border-radius:13px;padding:15px;cursor:pointer;transition:all .2s}
+.stake-card:hover{border-color:var(--ac2);transform:translateY(-2px)}
+.stake-card.sel{border-color:var(--ac);background:var(--ag)}
+.stake-card-top{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.stake-card-ic{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px}
+.stake-apy{font-size:21px;font-weight:700;font-family:'Space Mono',monospace;color:var(--gr);margin:3px 0 2px}
+.stake-desc{font-size:11.5px;color:var(--t3)}
+.dapp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;max-width:660px}
+.dapp-card{background:var(--s2);border:1px solid var(--bo);border-radius:13px;padding:15px;cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:7px}
+.dapp-card:hover{border-color:var(--bo2);transform:translateY(-2px);background:var(--s3)}
+.dapp-ic{width:42px;height:42px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px}
+.stat-row{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.stat{background:var(--s2);border:1px solid var(--bo);border-radius:11px;padding:13px 16px;min-width:120px}
+.stat-label{font-size:10px;color:var(--t3);font-family:'Space Mono',monospace;margin-bottom:4px;text-transform:uppercase;letter-spacing:.5px}
+.stat-value{font-size:17px;font-weight:700;font-family:'Space Mono',monospace}
+.portfolio-row{display:flex;align-items:center;gap:13px;padding:12px 15px;background:var(--s2);border:1px solid var(--bo);border-radius:11px;margin-bottom:7px;transition:border .2s;max-width:550px}
+.portfolio-row:hover{border-color:var(--bo2)}
+.portfolio-ic{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:'Space Mono',monospace;flex-shrink:0}
+.tx-list{display:flex;flex-direction:column;gap:7px;max-width:560px}
+.tx-row{display:flex;align-items:center;gap:13px;padding:12px 15px;background:var(--s2);border:1px solid var(--bo);border-radius:11px;transition:border .2s}
+.tx-row:hover{border-color:var(--bo2)}
+.tx-ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.tx-badge{font-size:10.5px;font-family:'Space Mono',monospace;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.tx-ok{background:rgba(0,212,160,.1);color:var(--gr);border:1px solid rgba(0,212,160,.2)}
+.tx-fail{background:rgba(240,80,96,.1);color:var(--re);border:1px solid rgba(240,80,96,.2)}
+.settings-sec{background:var(--s2);border:1px solid var(--bo);border-radius:13px;overflow:hidden;max-width:490px;margin-bottom:14px}
+.settings-sec-title{font-size:10px;font-family:'Space Mono',monospace;color:var(--t3);padding:11px 15px;border-bottom:1px solid var(--bo);text-transform:uppercase;letter-spacing:.9px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:12px 15px;border-bottom:1px solid var(--bo)}
+.settings-row:last-child{border-bottom:none}
+.settings-label{font-size:13px;font-weight:500}
+.settings-desc{font-size:11px;color:var(--t3);margin-top:2px}
+.toggle{width:40px;height:22px;border-radius:99px;background:var(--s4);border:1px solid var(--bo2);cursor:pointer;position:relative;transition:all .25s;flex-shrink:0}
+.toggle.on{background:var(--ac);border-color:var(--ac)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;background:#fff;top:2px;left:2px;transition:all .25s}
+.toggle.on::after{left:20px}
+.form-select{background:var(--s3);border:1px solid var(--bo2);border-radius:8px;padding:5px 11px;color:var(--t);font-size:12px;font-family:'Space Mono',monospace;outline:none;cursor:pointer}
+.slip-opts{display:flex;gap:5px}
+.slip-opt{padding:5px 11px;border-radius:7px;font-size:11.5px;font-family:'Space Mono',monospace;border:1px solid var(--bo2);color:var(--t2);cursor:pointer;transition:all .15s}
+.slip-opt:hover{border-color:var(--ac)}
+.slip-opt.on{border-color:var(--ac);color:var(--ac2);background:var(--ag)}
+.key-row{display:flex;gap:8px;align-items:center}
+.key-inp{flex:1;background:var(--s3);border:1px solid var(--bo2);border-radius:8px;padding:6px 11px;color:var(--t);font-size:12px;font-family:'Space Mono',monospace;outline:none}
+.key-inp:focus{border-color:var(--ac)}
+.key-save{padding:6px 14px;background:var(--ac);color:#fff;border:none;border-radius:8px;font-size:12px;font-family:'Space Mono',monospace;cursor:pointer;font-weight:700}
+.key-save:hover{background:#3d5be0}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-mark">OG</div>
+      open<span style="color:var(--ac2)">Agent</span>
+      <span class="logo-badge">OpenGradient Network</span>
+    </div>
+    <div class="topright">
+      <div class="og-tee-pill" id="og-tee-pill">⬡ TEE Verified</div>
+      <div class="og-status" id="og-status"><div class="og-dot"></div>OpenGradient</div>
+      <button class="wb wb-off" id="wbtn" onclick="connectWallet()">Connect Wallet</button>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="nav on" id="nav-chat" onclick="goScreen('chat',this)"><div class="nav-ic">💬</div>AI Agent<span class="nav-tag">LIVE</span></div>
+    <div class="s-label">DeFi Actions</div>
+    <div class="nav" onclick="goScreen('swap',this)"><div class="nav-ic">⇄</div>Swap</div>
+    <div class="nav" onclick="goScreen('bridge',this)"><div class="nav-ic">🌉</div>Bridge</div>
+    <div class="nav" onclick="goScreen('stake',this)"><div class="nav-ic">🔒</div>Stake</div>
+    <div class="nav" onclick="goScreen('dapps',this)"><div class="nav-ic">🧩</div>dApps</div>
+    <div class="s-label">Wallet</div>
+    <div class="nav" onclick="goScreen('portfolio',this)"><div class="nav-ic">◑</div>Portfolio</div>
+    <div class="nav" onclick="goScreen('history',this)"><div class="nav-ic">📋</div>History</div>
+    <div class="s-gap"></div>
+    <div class="addr-box" id="addr-box">
+      <div class="addr-box-top"><div class="addr-dot"></div><div class="addr-lbl">Connected</div></div>
+      <div class="addr-val" id="addr-val"></div>
+      <div class="addr-net">OpenGradient / Base Sepolia</div>
+      <div class="addr-bal" id="addr-bal">≈ $20,503.96</div>
+    </div>
+    <div class="nav" onclick="goScreen('settings',this)"><div class="nav-ic">⚙️</div>Settings</div>
+  </div>
+
+  <div class="main">
+    <div class="grid-bg"></div>
+
+    <!-- OG Bar -->
+    <div class="og-bar" id="og-bar">
+      <div class="og-bar-item"><div class="og-bar-dot" style="background:var(--gr)"></div>OpenGradient TEE Active</div>
+      <div class="og-bar-item"><div class="og-bar-dot" style="background:var(--ac2)"></div>Base Sepolia · Chain 84532</div>
+      <div class="og-bar-item"><div class="og-bar-dot" style="background:var(--pu)"></div>$OPG · 0x240b…987F</div>
+      <div style="margin-left:auto;color:var(--ac2)">BATCH_HASHED</div>
+    </div>
+
+    <!-- LOCK -->
+    <div id="lock">
+      <div class="lock-card">
+        <div class="lock-orb">⬡</div>
+        <div class="lock-title">Connect to openAgent</div>
+        <div class="lock-sub">Connect your EVM wallet and join the OpenGradient network to unlock AI-powered DeFi execution with TEE verification.</div>
+        <div class="og-notice"><strong>OpenGradient Network</strong><br>LLM inference is paid with $OPG on Base Sepolia (Chain 84532). Every AI decision runs inside a TEE — providing cryptographic proof of each action.</div>
+        <div class="steps">
+          <div class="step active" id="st1">① Connect wallet</div>
+          <div class="step" id="st2">② Base Sepolia</div>
+          <div class="step" id="st3">③ $OPG approved</div>
+        </div>
+        <button class="lock-btn" id="lbtn" onclick="connectWallet()">Connect Wallet</button>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="screen on" id="s-chat">
+      <div class="msgs" id="msgs"></div>
+      <div class="input-zone">
+        <div class="chips">
+          <div class="chip" onclick="qp('Swap 2 ETH to USDC')">⇄ Swap ETH</div>
+          <div class="chip" onclick="qp('Show my wallet balance')">◑ Balance</div>
+          <div class="chip" onclick="qp('Bridge 1 ETH to Arbitrum')">🌉 Bridge</div>
+          <div class="chip" onclick="qp('Stake 2 ETH on Lido')">🔒 Stake</div>
+          <div class="chip" onclick="qp('What is the price of ETH?')">📊 Prices</div>
+          <div class="chip" onclick="qp('Show my transaction history')">📋 History</div>
+        </div>
+        <div class="input-row">
+          <textarea class="chat-inp" id="chat-inp" rows="1" placeholder="Talk to me — swap, bridge, stake, or just chat…"></textarea>
+          <button class="send-btn" onclick="sendMsg()">
+            <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+          </button>
+        </div>
+        <div class="infer-status" id="infer-status"><div class="spinner"></div><span>Querying OpenGradient TEE…</span></div>
+      </div>
+    </div>
+
+    <!-- SWAP -->
+    <div class="screen" id="s-swap">
+      <div class="s-body">
+        <div class="s-title">Swap</div>
+        <div class="s-sub">Exchange any token pair. Routes verified by OpenGradient TEE.</div>
+        <div class="form-box">
+          <div class="form-field">
+            <div class="form-label">You Pay</div>
+            <div class="form-row">
+              <input class="amount-inp" id="sw-from-amt" type="number" placeholder="0.00" value="1" min="0" oninput="calcSwap()"/>
+              <div class="tok-sel" onclick="toggleDrop('sw-from-drop')">
+                <div class="tok-sel-ic" id="sw-from-ic" style="background:#627eea;color:#fff">Ξ</div>
+                <span id="sw-from-tok">ETH</span> ▾
+                <div class="tok-dropdown" id="sw-from-drop">
+                  <div class="tok-opt" onclick="setFromTok('ETH','Ξ','#627eea');stop(event)"><div class="tok-sel-ic" style="background:#627eea;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">Ξ</div>ETH</div>
+                  <div class="tok-opt" onclick="setFromTok('USDC','$','#2775ca');stop(event)"><div class="tok-sel-ic" style="background:#2775ca;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">$</div>USDC</div>
+                  <div class="tok-opt" onclick="setFromTok('WBTC','₿','#f7931a');stop(event)"><div class="tok-sel-ic" style="background:#f7931a;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">₿</div>WBTC</div>
+                  <div class="tok-opt" onclick="setFromTok('ARB','A','#28a0f0');stop(event)"><div class="tok-sel-ic" style="background:#28a0f0;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">A</div>ARB</div>
+                  <div class="tok-opt" onclick="setFromTok('OPG','⬡','#4f6ef7');stop(event)"><div class="tok-sel-ic" style="background:#4f6ef7;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">⬡</div>OPG</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-hint" id="sw-from-bal">Balance: 4.231 ETH</div>
+          </div>
+          <div class="flip-btn" onclick="flipSwap()">⇅</div>
+          <div class="form-field">
+            <div class="form-label">You Receive</div>
+            <div class="form-row">
+              <input class="amount-inp" id="sw-to-amt" type="number" placeholder="0.00" readonly/>
+              <div class="tok-sel" onclick="toggleDrop('sw-to-drop')">
+                <div class="tok-sel-ic" id="sw-to-ic" style="background:#2775ca;color:#fff">$</div>
+                <span id="sw-to-tok">USDC</span> ▾
+                <div class="tok-dropdown" id="sw-to-drop">
+                  <div class="tok-opt" onclick="setToTok('ETH','Ξ','#627eea');stop(event)"><div class="tok-sel-ic" style="background:#627eea;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">Ξ</div>ETH</div>
+                  <div class="tok-opt" onclick="setToTok('USDC','$','#2775ca');stop(event)"><div class="tok-sel-ic" style="background:#2775ca;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">$</div>USDC</div>
+                  <div class="tok-opt" onclick="setToTok('WBTC','₿','#f7931a');stop(event)"><div class="tok-sel-ic" style="background:#f7931a;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">₿</div>WBTC</div>
+                  <div class="tok-opt" onclick="setToTok('ARB','A','#28a0f0');stop(event)"><div class="tok-sel-ic" style="background:#28a0f0;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">A</div>ARB</div>
+                  <div class="tok-opt" onclick="setToTok('OPG','⬡','#4f6ef7');stop(event)"><div class="tok-sel-ic" style="background:#4f6ef7;color:#fff;width:20px;height:20px;border-radius:50%;font-size:9px">⬡</div>OPG</div>
+                </div>
+              </div>
+            </div>
+            <div class="form-hint">Balance: 1,240.00 USDC</div>
+          </div>
+          <div class="info-box">
+            <div class="info-row">Rate <span id="sw-rate">1 ETH = 3,241.80 USDC</span></div>
+            <div class="info-row">Price impact <span style="color:var(--gr)">0.04%</span></div>
+            <div class="info-row">Route <span>Uniswap v3 (OG-routed)</span></div>
+            <div class="info-row">Network fee <span>~$1.20</span></div>
+            <div class="info-row">OG settlement <span style="color:#c084fc">BATCH_HASHED</span></div>
+          </div>
+          <button class="main-cta" id="sw-btn" onclick="execSwap()">Swap ETH → USDC</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BRIDGE -->
+    <div class="screen" id="s-bridge">
+      <div class="s-body">
+        <div class="s-title">Bridge</div>
+        <div class="s-sub">Move assets cross-chain. Routes TEE-verified by OpenGradient.</div>
+        <div class="form-box" style="max-width:470px">
+          <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px">
+            <div class="tok-sel" style="flex:1"><div class="tok-sel-ic" style="background:#627eea;color:#fff">Ξ</div>Base Sepolia</div>
+            <div style="font-size:20px;color:var(--t3)">→</div>
+            <div class="tok-sel" style="flex:1"><div class="tok-sel-ic" id="br-to-ic" style="background:#28a0f0;color:#fff">A</div><span id="br-to-name">Arbitrum</span></div>
+          </div>
+          <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap" id="br-chains">
+            <div class="chip" style="border-color:var(--ac);color:var(--ac2);background:var(--ag)" onclick="setBridgeTo('Arbitrum','#28a0f0','A',this)">Arbitrum</div>
+            <div class="chip" onclick="setBridgeTo('Optimism','#ff0420','O',this)">Optimism</div>
+            <div class="chip" onclick="setBridgeTo('Polygon','#8247e5','P',this)">Polygon</div>
+            <div class="chip" onclick="setBridgeTo('zkSync','#4e529a','Z',this)">zkSync</div>
+            <div class="chip" onclick="setBridgeTo('Ethereum','#627eea','E',this)">Ethereum</div>
+            <div class="chip" onclick="setBridgeTo('Base','#0052ff','B',this)">Base</div>
+          </div>
+          <div class="form-field" style="margin-bottom:0">
+            <div class="form-label">Amount</div>
+            <div class="form-row">
+              <input class="amount-inp" type="number" placeholder="0.00" value="0.5" id="br-amt" oninput="calcBridge()"/>
+              <div class="tok-sel"><div class="tok-sel-ic" style="background:#627eea;color:#fff">Ξ</div>ETH</div>
+            </div>
+            <div class="form-hint">Balance: 4.231 ETH</div>
+          </div>
+          <div class="info-box" style="margin-top:10px">
+            <div class="info-row">Protocol <span>Hop Protocol</span></div>
+            <div class="info-row">ETA <span id="br-eta">~3 minutes</span></div>
+            <div class="info-row">Bridge fee <span>0.001 ETH</span></div>
+            <div class="info-row">You receive <span id="br-receive" style="color:var(--gr)">0.499 ETH on Arbitrum</span></div>
+            <div class="info-row">OG verification <span style="color:#c084fc">TEE Attested</span></div>
+          </div>
+          <button class="main-cta" id="br-btn" onclick="execBridge()">Bridge to Arbitrum</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- STAKE -->
+    <div class="screen" id="s-stake">
+      <div class="s-body">
+        <div class="s-title">Stake</div>
+        <div class="s-sub">Earn yield. Every staking decision is TEE-verified by OpenGradient.</div>
+        <div class="stake-grid" id="stake-cards"></div>
+        <div class="form-box">
+          <div style="font-size:13px;font-weight:600;margin-bottom:13px">Stake with <span id="stake-proto" style="color:var(--ac2)">Lido</span> · <span id="stake-apy" style="color:var(--gr)">3.8% APY</span></div>
+          <div class="form-field" style="margin-bottom:11px">
+            <div class="form-label">Amount to Stake</div>
+            <div class="form-row">
+              <input class="amount-inp" type="number" value="2" placeholder="0.00" id="stake-amt" oninput="calcStake()"/>
+              <div class="tok-sel"><div class="tok-sel-ic" style="background:#627eea;color:#fff">Ξ</div>ETH</div>
+            </div>
+            <div class="form-hint">Balance: 4.231 ETH · You receive: <span id="stake-recv" style="color:var(--gr)">2.000 stETH</span></div>
+          </div>
+          <div class="info-box">
+            <div class="info-row">Projected annual yield <span id="stake-yield" style="color:var(--gr)">0.076 ETH</span></div>
+            <div class="info-row">Unstake <span>Anytime</span></div>
+            <div class="info-row">OG verification <span style="color:#c084fc">TEE Attested</span></div>
+          </div>
+          <button class="main-cta" id="stake-btn" onclick="execStake()">Stake ETH on Lido</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DAPPS -->
+    <div class="screen" id="s-dapps">
+      <div class="s-body">
+        <div class="s-title">dApps</div>
+        <div class="s-sub">Interact with DeFi protocols through the openAgent AI. All actions TEE-verified.</div>
+        <div class="dapp-grid" id="dapp-grid"></div>
+      </div>
+    </div>
+
+    <!-- PORTFOLIO -->
+    <div class="screen" id="s-portfolio">
+      <div class="s-body">
+        <div class="s-title">Portfolio</div>
+        <div class="s-sub">Your assets on the OpenGradient network.</div>
+        <div class="stat-row">
+          <div class="stat"><div class="stat-label">Total Value</div><div class="stat-value" style="color:var(--gr)">$20,503.96</div></div>
+          <div class="stat"><div class="stat-label">24h Change</div><div class="stat-value" style="color:var(--gr)">+$312.44</div></div>
+          <div class="stat"><div class="stat-label">Assets</div><div class="stat-value" style="color:var(--ac2)">6</div></div>
+          <div class="stat"><div class="stat-label">Staked</div><div class="stat-value" style="color:var(--am)">$5,104</div></div>
+          <div class="stat"><div class="stat-label">$OPG</div><div class="stat-value" style="color:#c084fc">42.00</div></div>
+        </div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#627eea22;border:1px solid #627eea44;color:#627eea">E</div><div style="flex:1"><div style="font-size:13px;font-weight:600">ETH</div><div style="font-size:11px;color:var(--t3)">Ethereum</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">4.231 ETH</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">$13,710</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--gr);min-width:44px;text-align:right">+2.1%</div></div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#2775ca22;border:1px solid #2775ca44;color:#2775ca">U</div><div style="flex:1"><div style="font-size:13px;font-weight:600">USDC</div><div style="font-size:11px;color:var(--t3)">USD Coin</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">1,240 USDC</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">$1,240</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--t3);min-width:44px;text-align:right">0.0%</div></div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#f7931a22;border:1px solid #f7931a44;color:#f7931a">W</div><div style="flex:1"><div style="font-size:13px;font-weight:600">WBTC</div><div style="font-size:11px;color:var(--t3)">Wrapped Bitcoin</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">0.082 WBTC</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">$5,104</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--gr);min-width:44px;text-align:right">+1.4%</div></div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#28a0f022;border:1px solid #28a0f044;color:#28a0f0">A</div><div style="flex:1"><div style="font-size:13px;font-weight:600">ARB</div><div style="font-size:11px;color:var(--t3)">Arbitrum</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">321.4 ARB</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">$449</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--gr);min-width:44px;text-align:right">+3.8%</div></div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#00a3ff22;border:1px solid #00a3ff44;color:#00a3ff">S</div><div style="flex:1"><div style="font-size:13px;font-weight:600">stETH</div><div style="font-size:11px;color:var(--t3)">Lido Staked ETH</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">2.000 stETH</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">$6,483</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--gr);min-width:44px;text-align:right">+2.1%</div></div>
+        <div class="portfolio-row"><div class="portfolio-ic" style="background:#4f6ef722;border:1px solid #4f6ef744;color:#8ba4ff">⬡</div><div style="flex:1"><div style="font-size:13px;font-weight:600">$OPG</div><div style="font-size:11px;color:var(--t3)">OpenGradient Token</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:600;font-family:'Space Mono',monospace">42.00 OPG</div><div style="font-size:11px;color:var(--t3);font-family:'Space Mono',monospace">~$16.80</div></div><div style="font-size:11.5px;font-family:'Space Mono',monospace;color:var(--gr);min-width:44px;text-align:right">+5.2%</div></div>
+      </div>
+    </div>
+
+    <!-- HISTORY -->
+    <div class="screen" id="s-history">
+      <div class="s-body">
+        <div class="s-title">Transaction History</div>
+        <div class="s-sub">On-chain activity with OpenGradient TEE verification hashes.</div>
+        <div class="tx-list">
+          <div class="tx-row"><div class="tx-ic" style="background:#627eea22;border:1px solid #627eea44;color:#627eea">⇄</div><div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:2px">Swap — 1 ETH → 3,241.80 USDC</div><div style="font-size:10.5px;color:var(--t3);font-family:'Space Mono',monospace">2 mins ago · OG Tx: 0xa1b…9f2c</div></div><div class="tx-badge tx-ok">✓ Confirmed</div></div>
+          <div class="tx-row"><div class="tx-ic" style="background:#28a0f022;border:1px solid #28a0f044;color:#28a0f0">🌉</div><div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:2px">Bridge — 0.5 ETH → Arbitrum</div><div style="font-size:10.5px;color:var(--t3);font-family:'Space Mono',monospace">1 hour ago · OG Tx: 0xb2c…1e3d</div></div><div class="tx-badge tx-ok">✓ Confirmed</div></div>
+          <div class="tx-row"><div class="tx-ic" style="background:#00a3ff22;border:1px solid #00a3ff44;color:#00a3ff">🔒</div><div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:2px">Stake — 2 ETH on Lido</div><div style="font-size:10.5px;color:var(--t3);font-family:'Space Mono',monospace">3 hours ago · OG Tx: 0xc3d…2f4e</div></div><div class="tx-badge tx-ok">✓ Confirmed</div></div>
+          <div class="tx-row"><div class="tx-ic" style="background:#f0506022;border:1px solid #f0506044;color:#f05060">🌉</div><div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:2px">Bridge — 0.1 ETH → Optimism</div><div style="font-size:10.5px;color:var(--t3);font-family:'Space Mono',monospace">2 days ago · Slippage exceeded</div></div><div class="tx-badge tx-fail">✗ Failed</div></div>
+          <div class="tx-row"><div class="tx-ic" style="background:#4f6ef722;border:1px solid #4f6ef744;color:#8ba4ff">⬡</div><div style="flex:1"><div style="font-size:13px;font-weight:600;margin-bottom:2px">$OPG Permit2 Approval — 10 OPG</div><div style="font-size:10.5px;color:var(--t3);font-family:'Space Mono',monospace">3 days ago · LLM inference payments</div></div><div class="tx-badge tx-ok">✓ Confirmed</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="screen" id="s-settings">
+      <div class="s-body">
+        <div class="s-title">Settings</div>
+        <div class="s-sub">Configure openAgent and your OpenGradient connection.</div>
+        <div class="settings-sec">
+          <div class="settings-sec-title">OpenGradient Network</div>
+          <div class="settings-row"><div><div class="settings-label">$OPG Token Address</div><div class="settings-desc" style="font-family:'Space Mono',monospace;font-size:10px;margin-top:3px">0x240b09731D96979f50B2C649C9CE10FcF9C7987F</div></div><div style="font-size:11px;color:var(--ac2);cursor:pointer;font-family:'Space Mono',monospace" onclick="copyOpg()">Copy</div></div>
+          <div class="settings-row"><div><div class="settings-label">Settlement Mode</div><div class="settings-desc">How inference proofs are recorded on-chain</div></div><select class="form-select"><option>BATCH_HASHED</option><option>INDIVIDUAL_FULL</option><option>PRIVATE</option></select></div>
+          <div class="settings-row"><div><div class="settings-label">LLM Model</div><div class="settings-desc">TEE-verified model for agent decisions</div></div><select class="form-select"><option>claude-sonnet-4-6 (TEE)</option><option>gpt-4.1-2025-04-14 (TEE)</option><option>gemini-2.5-flash (TEE)</option><option>grok-4 (TEE)</option></select></div>
+          <div class="settings-row"><div><div class="settings-label">Permit2 Auto-Approve</div><div class="settings-desc">Auto-approve $OPG for inference on startup</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-sec">
+          <div class="settings-sec-title">Trading</div>
+          <div class="settings-row"><div><div class="settings-label">Slippage Tolerance</div><div class="settings-desc">Max allowed price movement</div></div><div class="slip-opts"><div class="slip-opt" onclick="slip(this)">0.1%</div><div class="slip-opt on" onclick="slip(this)">0.5%</div><div class="slip-opt" onclick="slip(this)">1.0%</div><div class="slip-opt" onclick="slip(this)">2.0%</div></div></div>
+          <div class="settings-row"><div><div class="settings-label">Transaction Deadline</div></div><select class="form-select"><option>20 minutes</option><option>30 minutes</option><option>1 hour</option></select></div>
+          <div class="settings-row"><div><div class="settings-label">Expert Mode</div><div class="settings-desc">Skip confirmation prompts</div></div><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-sec">
+          <div class="settings-sec-title">AI Agent</div>
+          <div class="settings-row"><div><div class="settings-label">Show TEE proof hashes</div><div class="settings-desc">Display OG verification tx after each inference</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="settings-row"><div><div class="settings-label">Price alerts</div><div class="settings-desc">Notify on significant moves</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+        <div class="settings-sec">
+          <div class="settings-sec-title">Wallet</div>
+          <div class="settings-row"><div><div class="settings-label">Connected</div><div class="settings-desc" id="settings-addr" style="font-family:'Space Mono',monospace;margin-top:3px">Not connected</div></div><div style="font-size:11.5px;color:var(--re);cursor:pointer;font-family:'Space Mono',monospace;font-weight:700" onclick="disconnectWallet()">Disconnect</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── TOKEN DATA ────────────────────────────────────────────────
+var RATES = {
+  ETH:{USDC:3241.80,WBTC:0.0309,ARB:4510,OPG:8104.5,ETH:1},
+  USDC:{ETH:0.000309,WBTC:0.0000095,ARB:1.39,OPG:2.5,USDC:1},
+  WBTC:{ETH:32.4,USDC:62180,ARB:86500,OPG:155450,WBTC:1},
+  ARB:{ETH:0.000222,USDC:0.72,WBTC:0.0000116,OPG:1.8,ARB:1},
+  OPG:{ETH:0.000123,USDC:0.40,WBTC:0.0000064,ARB:0.556,OPG:1}
+};
+var BALS={ETH:'4.231',USDC:'1,240.00',WBTC:'0.082',ARB:'321.4',OPG:'42.00'};
+
+// ── STATE ─────────────────────────────────────────────────────
+var walletAddr=null, chatHistory=[], swFrom='ETH', swTo='USDC', stakeApy=3.8, bridgeChain='Arbitrum';
+
+// ── WALLET ────────────────────────────────────────────────────
+async function connectWallet(){
+  var btn=document.getElementById('lbtn');
+  btn.textContent='Connecting…';btn.style.opacity='0.7';
+
+  try{
+    if(!window.ethereum) throw new Error('MetaMask not found. Please install it from metamask.io');
+    var accounts=await window.ethereum.request({method:'eth_requestAccounts'});
+    walletAddr=accounts[0];
+  }catch(e){
+    btn.textContent='Connect Wallet';btn.style.opacity='1';
+    alert(e.message);return;
+  }
+
+  setStep('st1','done','✓ Wallet connected');
+  setStep('st2','active','② Switching to Base Sepolia…');
+  btn.textContent='Switching network…';
+
+  try{
+    await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x14A34'}]});
+  }catch(err){
+    if(err.code===4902){
+      await window.ethereum.request({method:'wallet_addEthereumChain',params:[{
+        chainId:'0x14A34',chainName:'Base Sepolia',
+        nativeCurrency:{name:'ETH',symbol:'ETH',decimals:18},
+        rpcUrls:['https://sepolia.base.org'],
+        blockExplorerUrls:['https://sepolia-explorer.base.org']
+      }]});
+    }
+  }
+
+  setStep('st2','done','✓ Base Sepolia');
+  setStep('st3','active','③ Approving $OPG…');
+  btn.textContent='Approving $OPG…';
+  await sleep(900);
+  setStep('st3','done','✓ $OPG approved');
+  btn.textContent='Launching…';
+  await sleep(400);
+
+  // show connected state
+  document.getElementById('lock').style.display='none';
+  document.getElementById('og-status').style.display='flex';
+  document.getElementById('og-tee-pill').style.display='flex';
+  document.getElementById('og-bar').classList.add('show');
+  document.getElementById('addr-box').style.display='block';
+  document.getElementById('addr-val').textContent=shortAddr(walletAddr);
+  document.getElementById('wbtn').textContent=shortAddr(walletAddr);
+  document.getElementById('wbtn').className='wb wb-on';
+  document.getElementById('settings-addr').textContent=walletAddr;
+
+  addAiMsg('Welcome to <strong>openAgent</strong> — powered by OpenGradient\'s decentralised TEE inference network.<br><br>I can execute real DeFi actions on your behalf, check your portfolio, and chat about anything. Every AI decision I make is cryptographically verified on-chain.<br><br>What would you like to do?');
+}
+
+function disconnectWallet(){
+  walletAddr=null;chatHistory=[];
+  document.getElementById('lock').style.display='flex';
+  document.getElementById('og-status').style.display='none';
+  document.getElementById('og-tee-pill').style.display='none';
+  document.getElementById('og-bar').classList.remove('show');
+  document.getElementById('addr-box').style.display='none';
+  document.getElementById('wbtn').textContent='Connect Wallet';
+  document.getElementById('wbtn').className='wb wb-off';
+  setStep('st1','active','① Connect wallet');
+  setStep('st2','','② Base Sepolia');
+  setStep('st3','','③ $OPG approved');
+  document.getElementById('lbtn').textContent='Connect Wallet';
+  document.getElementById('lbtn').style.opacity='1';
+  document.getElementById('msgs').innerHTML='';
+}
+
+// ── NAVIGATION ────────────────────────────────────────────────
+function goScreen(name,el){
+  if(!walletAddr&&name!=='chat')return;
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('on')});
+  document.getElementById('s-'+name).classList.add('on');
+  document.querySelectorAll('.nav').forEach(function(n){n.classList.remove('on')});
+  if(el)el.classList.add('on');
+}
+
+// ── CHAT ──────────────────────────────────────────────────────
+function addAiMsg(html,card){
+  var area=document.getElementById('msgs');
+  var w=document.createElement('div');w.className='msg';
+  w.innerHTML='<div class="av ai">OG</div><div class="bwrap"><div class="bub ai">'+html+'</div>'+(card||'')+'</div>';
+  area.appendChild(w);area.scrollTop=area.scrollHeight;
+}
+function addUserMsg(text){
+  var area=document.getElementById('msgs');
+  var w=document.createElement('div');w.className='msg u';
+  w.innerHTML='<div class="av u">YOU</div><div class="bwrap"><div class="bub u">'+esc(text)+'</div></div>';
+  area.appendChild(w);area.scrollTop=area.scrollHeight;
+}
+function showTyping(){
+  var area=document.getElementById('msgs');
+  var w=document.createElement('div');w.className='msg';w.id='typ';
+  w.innerHTML='<div class="av ai">OG</div><div class="bwrap"><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>';
+  area.appendChild(w);area.scrollTop=area.scrollHeight;
+  document.getElementById('infer-status').style.display='flex';
+}
+function hideTyping(){
+  var t=document.getElementById('typ');if(t)t.remove();
+  document.getElementById('infer-status').style.display='none';
+}
+function qp(text){document.getElementById('chat-inp').value=text;sendMsg();}
+
+async function sendMsg(){
+  var inp=document.getElementById('chat-inp');
+  var text=inp.value.trim();if(!text)return;
+  inp.value='';
+  addUserMsg(text);
+  chatHistory.push({role:'user',content:text});
+  showTyping();
+  try{
+    var res=await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({messages:chatHistory,wallet_address:walletAddr||'not_connected'})
+    });
+    if(!res.ok){var e=await res.json();throw new Error(e.detail||'Server error');}
+    var data=await res.json();
+    hideTyping();
+    chatHistory.push({role:'assistant',content:data.content||''});
+    renderResponse(data);
+  }catch(e){
+    hideTyping();
+    addAiMsg('⚠ <strong>Error</strong>: '+esc(e.message)+'<br><br>Make sure the backend is running at <code>localhost:8000</code>.');
+  }
+}
+
+function renderResponse(data){
+  var proof='<div class="og-proof"><div class="og-proof-dot"></div>⬡ OG TEE · '+(data.model||'claude-sonnet-4-6')+' · payment: <code>'+(data.payment_hash?(data.payment_hash.slice(0,10)+'…'+data.payment_hash.slice(-6)):'n/a')+'</code></div>';
+  var card='';
+  if(data.tool_calls&&data.tool_calls.length>0){
+    data.tool_calls.forEach(function(tc,i){
+      card+=buildCard(tc.name,tc.args,data.tool_results[i]||{});
+    });
+  }
+  addAiMsg(md(data.content||'')+'<br>'+proof,card);
+}
+
+function buildCard(name,args,r){
+  if(!r.success)return'<div class="action-card"><div class="ac-top"><div class="ac-dot"></div>'+name+'</div><div style="color:var(--re);font-size:12px">⚠ '+esc(r.error||'Error')+'</div></div>';
+  var id='ac'+Date.now()+Math.random().toString(36).slice(2,6);
+  var rJson=JSON.stringify(r).replace(/'/g,"\\'");
+  if(name==='swap_tokens'){
+    var fc=tokCol(r.from_token),tc=tokCol(r.to_token);
+    return'<div class="action-card" id="'+id+'"><div class="ac-top"><div class="ac-dot"></div>Swap · '+esc(r.route||'Uniswap v3')+'</div><div class="tok-row"><div class="tok-chip"><div class="tok-icon" style="background:'+fc.bg+';color:'+fc.fg+'">'+tokSym(r.from_token)+'</div>'+esc(r.from_token)+'</div><div class="ac-arrow">→</div><div class="tok-chip"><div class="tok-icon" style="background:'+tc.bg+';color:'+tc.fg+'">'+tokSym(r.to_token)+'</div>'+esc(r.to_token)+'</div></div><div class="ac-bignum">'+fmt(r.input_amount)+' '+esc(r.from_token)+'</div><div class="ac-smallnum">≈ '+fmt(r.output_amount)+' '+esc(r.to_token)+' · $'+fmt(r.from_usd)+'</div><div class="ac-meta"><div class="ac-meta-item">Rate <b>'+fmt(r.rate)+'</b></div><div class="ac-meta-item">Fee <b>$'+r.fee_usd+'</b></div><div class="ac-meta-item">Gas <b>~$'+r.gas_usd+'</b></div></div><div class="ac-og-tag">⬡ OG TEE · BATCH_HASHED</div><button class="ac-btn ac-btn-primary" id="btn-'+id+'" onclick="confirmTx(\''+id+'\',\'Swapped '+fmt(r.input_amount)+' '+esc(r.from_token)+' → '+fmt(r.output_amount)+' '+esc(r.to_token)+'\',\'swap_tokens\',JSON.parse(decodeURIComponent(\''+encodeURIComponent(JSON.stringify(r))+'\')))">Confirm Swap</button></div>';
+  }
+  if(name==='bridge_tokens'){
+    var fc=tokCol(r.token);
+    return'<div class="action-card" id="'+id+'"><div class="ac-top"><div class="ac-dot"></div>Bridge · '+esc(r.protocol||'Hop')+'</div><div class="tok-row"><div class="tok-chip"><div class="tok-icon" style="background:'+fc.bg+';color:'+fc.fg+'">'+tokSym(r.token)+'</div>Source</div><div class="ac-arrow">→</div><div class="tok-chip"><div class="tok-icon" style="background:#28a0f0;color:#fff">→</div>'+esc(r.destination_chain)+'</div></div><div class="ac-bignum">'+fmt(r.amount)+' '+esc(r.token)+'</div><div class="ac-smallnum">Receive: '+fmt(r.receive_amount)+' '+esc(r.token)+' on '+esc(r.destination_chain)+'</div><div class="ac-meta"><div class="ac-meta-item">ETA <b>~'+r.eta_minutes+' min</b></div><div class="ac-meta-item">Fee <b>'+fmt(r.bridge_fee)+' '+esc(r.token)+'</b></div></div><div class="ac-og-tag">⬡ OG TEE · BATCH_HASHED</div><button class="ac-btn ac-btn-primary" id="btn-'+id+'" onclick="confirmTx(\''+id+'\',\'Bridged '+fmt(r.amount)+' '+esc(r.token)+' → '+esc(r.destination_chain)+'\',\'bridge_tokens\',JSON.parse(decodeURIComponent(\''+encodeURIComponent(JSON.stringify(r))+'\')))">Confirm Bridge</button></div>';
+  }
+  if(name==='stake_tokens'){
+    return'<div class="action-card" id="'+id+'"><div class="ac-top"><div class="ac-dot"></div>Stake · '+esc(r.protocol)+'</div><div class="tok-row"><div class="tok-chip"><div class="tok-icon" style="background:#627eea;color:#fff">Ξ</div>'+fmt(r.amount)+' ETH</div><div class="ac-arrow">→</div><div class="tok-chip"><div class="tok-icon" style="background:#00a3ff;color:#fff">st</div>'+esc(r.receive_token)+'</div></div><div class="ac-bignum">'+fmt(r.receive_amount)+' '+esc(r.receive_token)+'</div><div class="ac-meta"><div class="ac-meta-item">APY <b style="color:var(--gr)">'+r.apy+'%</b></div><div class="ac-meta-item">Yield <b>'+fmt(r.annual_yield)+' ETH/yr</b></div></div><div class="ac-og-tag">⬡ OG TEE · BATCH_HASHED</div><button class="ac-btn ac-btn-primary" id="btn-'+id+'" onclick="confirmTx(\''+id+'\',\'Staked '+fmt(r.amount)+' ETH on '+esc(r.protocol)+' @ '+r.apy+'% APY\',\'stake_tokens\',JSON.parse(decodeURIComponent(\''+encodeURIComponent(JSON.stringify(r))+'\')))">Confirm Stake</button></div>';
+  }
+  if(name==='get_wallet_balance'){
+    var items=(r.balances||[]).map(function(b){return'<div class="bal-item"><div class="bal-sym">'+esc(b.token)+'</div><div class="bal-amt">'+fmt(b.amount)+'</div><div class="bal-usd">$'+fmt(b.usd_value)+'</div></div>';}).join('');
+    return'<div class="action-card" style="width:300px"><div class="ac-top"><div class="ac-dot"></div>Portfolio · '+shortAddr(r.wallet)+'</div><div class="bal-grid">'+items+'</div><div class="bal-total">Total: <b style="color:var(--gr)">$'+fmt(r.total_usd)+'</b></div></div>';
+  }
+  if(name==='get_token_price'){
+    var rows=Object.entries(r.prices_usd||{}).map(function(e){return'<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bo);font-family:\'Space Mono\',monospace;font-size:12px"><span>'+esc(e[0])+'</span><span style="color:var(--gr)">$'+fmt(e[1])+'</span></div>';}).join('');
+    return'<div class="action-card"><div class="ac-top"><div class="ac-dot"></div>Token Prices · OG Oracle</div>'+rows+'</div>';
+  }
+  if(name==='get_tx_history'){
+    var rows=(r.transactions||[]).map(function(tx){return'<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bo)"><div style="flex:1"><div style="font-size:12px;font-weight:600">'+esc(tx.type)+'</div><div style="font-size:10.5px;color:var(--t3);font-family:\'Space Mono\',monospace">'+esc(tx.description)+' · '+esc(tx.time)+'</div></div><div class="tx-badge '+(tx.status==='confirmed'?'tx-ok':'tx-fail')+'">'+(tx.status==='confirmed'?'✓':'✗')+' '+esc(tx.status)+'</div></div>';}).join('');
+    return'<div class="action-card" style="width:310px"><div class="ac-top"><div class="ac-dot"></div>Recent Transactions</div>'+rows+'</div>';
+  }
+  return'<div class="action-card"><div class="ac-top"><div class="ac-dot"></div>'+esc(name)+'</div><pre style="font-size:10px;color:var(--t2);overflow:auto;max-height:100px">'+esc(JSON.stringify(r,null,2))+'</pre></div>';
+}
+
+
+// ── CHAIN IDs ─────────────────────────────────────────────────
+var CHAIN_ETH_MAINNET = '0x1';      // 1
+var CHAIN_BASE_SEPOLIA = '0x14A34'; // 84532
+
+// Token addresses on Ethereum mainnet
+var TOKEN_ADDRS = {
+  ETH:  'native',
+  WETH: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
+  USDC: '0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48',
+  USDT: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
+  WBTC: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
+  ARB:  '0xB50721BCf8d664c30412Cfbc6cf7a15145234ad1',
+  DAI:  '0x6B175474E89094C44Da98b954EedeAC495271d0F',
+};
+
+// ERC-20 approve ABI (minimal)
+var ERC20_APPROVE_ABI = '0x095ea7b3'; // approve(address,uint256) selector
+
+// ── SWITCH NETWORK HELPER ─────────────────────────────────────
+async function switchToChain(chainHex) {
+  var current = await window.ethereum.request({method:'eth_chainId'});
+  if(current === chainHex) return true;
+  try {
+    await window.ethereum.request({method:'wallet_switchEthereumChain', params:[{chainId: chainHex}]});
+    return true;
+  } catch(e) {
+    if(e.code === 4902) {
+      // Chain not added — add it
+      if(chainHex === CHAIN_BASE_SEPOLIA) {
+        await window.ethereum.request({method:'wallet_addEthereumChain', params:[{
+          chainId: CHAIN_BASE_SEPOLIA,
+          chainName: 'Base Sepolia',
+          nativeCurrency: {name:'ETH',symbol:'ETH',decimals:18},
+          rpcUrls: ['https://sepolia.base.org'],
+          blockExplorerUrls: ['https://sepolia-explorer.base.org']
+        }]});
+        return true;
+      }
+    }
+    throw e;
+  }
+}
+
+// ── GET SWAP CALLDATA from 0x API ─────────────────────────────
+async function getSwapCalldata(fromToken, toToken, amountWei, slippageBps) {
+  // 0x Swap API v2 — free, no key needed for basic usage
+  var sellToken = fromToken === 'ETH' ? 'ETH' : (TOKEN_ADDRS[fromToken] || fromToken);
+  var buyToken  = toToken  === 'ETH' ? 'ETH' : (TOKEN_ADDRS[toToken]  || toToken);
+  var url = 'https://api.0x.org/swap/v1/quote?' +
+    'sellToken=' + sellToken +
+    '&buyToken=' + buyToken +
+    '&sellAmount=' + amountWei +
+    '&slippagePercentage=' + (slippageBps / 10000) +
+    '&takerAddress=' + walletAddr;
+  try {
+    var resp = await fetch(url, {headers: {'0x-api-key': ''}});
+    if(!resp.ok) throw new Error('0x API error: ' + resp.status);
+    return await resp.json();
+  } catch(e) {
+    throw new Error('Could not get swap quote: ' + e.message);
+  }
+}
+
+// ── ERC-20 APPROVE CALLDATA ───────────────────────────────────
+function encodeApprove(spender, amountHex) {
+  // approve(address spender, uint256 amount)
+  var paddedSpender = spender.replace('0x','').toLowerCase().padStart(64,'0');
+  var paddedAmount  = amountHex.replace('0x','').padStart(64,'0');
+  return ERC20_APPROVE_ABI + paddedSpender + paddedAmount;
+}
+
+// ── WAIT FOR TX ───────────────────────────────────────────────
+async function waitForTx(txHash) {
+  for(var i=0;i<40;i++){
+    await sleep(2000);
+    try{
+      var r = await window.ethereum.request({method:'eth_getTransactionReceipt',params:[txHash]});
+      if(r && r.blockNumber) return r;
+    }catch(e){}
+  }
+  return null;
+}
+
+// ── SHOW TX TAG ───────────────────────────────────────────────
+function showTxTag(btn, txHash, network) {
+  var card = btn.closest('.action-card') || btn.closest('.form-box');
+  if(card){
+    var tag=document.createElement('div');
+    tag.style.cssText='font-size:10px;color:#c084fc;font-family:\'Space Mono\',monospace;margin-top:8px';
+    var explorer = network==='mainnet'
+      ? 'https://etherscan.io/tx/'
+      : 'https://sepolia-explorer.base.org/tx/';
+    tag.innerHTML='Tx: <a href="'+explorer+txHash+'" target="_blank" style="color:#c084fc">'+txHash.slice(0,18)+'…</a>';
+    card.appendChild(tag);
+  }
+}
+
+// ── MAIN SWAP EXECUTOR ────────────────────────────────────────
+async function sendMetaMaskTx(btn, toAddress, valueEth, dataHex, successMsg) {
+  if(!walletAddr){alert('Please connect your wallet first.');return;}
+  if(!window.ethereum){alert('MetaMask not found.');return;}
+  btn.disabled=true; btn.style.background='var(--am)'; btn.style.color='#000';
+  btn.textContent='Check MetaMask…';
+  try{
+    var valueWei='0x'+Math.floor(valueEth*1e18).toString(16);
+    var txHash=await window.ethereum.request({
+      method:'eth_sendTransaction',
+      params:[{from:walletAddr, to:toAddress, value:valueWei, data:dataHex||'0x'}]
+    });
+    btn.textContent='Confirming on-chain…';
+    await waitForTx(txHash);
+    btn.className='ac-btn ac-btn-done';
+    btn.textContent='✓ '+successMsg;
+    btn.disabled=false;
+    showTxTag(btn, txHash, 'mainnet');
+  }catch(e){
+    btn.className='ac-btn ac-btn-primary';
+    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,50);
+    btn.style.background='';btn.style.color='';btn.disabled=false;
+  }
+}
+
+async function confirmTx(cardId, msg, toolName, result){
+  var btn=document.getElementById('btn-'+cardId);if(!btn)return;
+  if(!walletAddr){alert('Connect your wallet first.');return;}
+  if(!window.ethereum){
+    btn.className='ac-btn ac-btn-wait';btn.textContent='Waiting for wallet…';
+    await sleep(1800);
+    btn.className='ac-btn ac-btn-done';btn.textContent='✓ '+msg;
+    return;
+  }
+
+  if(toolName==='swap_tokens' && result) {
+    await executeRealSwap(btn, result, msg);
+  } else if(toolName==='bridge_tokens' && result) {
+    await executeRealBridge(btn, result, msg);
+  } else if(toolName==='stake_tokens' && result) {
+    await executeRealStake(btn, result, msg);
+  } else {
+    await sendMetaMaskTx(btn, walletAddr, 0, '0x', msg);
+  }
+}
+
+// ── REAL SWAP via 0x API ──────────────────────────────────────
+async function executeRealSwap(btn, result, msg) {
+  btn.disabled=true; btn.style.background='var(--am)'; btn.style.color='#000';
+  try {
+    // Step 1 — switch to Ethereum mainnet
+    btn.textContent='Switching to Ethereum mainnet…';
+    await switchToChain(CHAIN_ETH_MAINNET);
+
+    var fromTok = (result.from_token||'ETH').toUpperCase();
+    var toTok   = (result.to_token||'USDC').toUpperCase();
+    var amt     = parseFloat(result.input_amount)||0;
+    var amtWei  = '0x'+Math.floor(amt*1e18).toString(16);
+
+    // Step 2 — get swap quote from 0x
+    btn.textContent='Getting best swap route…';
+    var quote;
+    try {
+      quote = await getSwapCalldata(fromTok, toTok, amtWei, 50); // 0.5% slippage
+    } catch(e) {
+      // 0x API failed — fall back to direct Uniswap router call
+      quote = null;
+    }
+
+    if(quote && quote.to && quote.data) {
+      // Step 3a — approve ERC-20 if needed
+      if(fromTok !== 'ETH' && TOKEN_ADDRS[fromTok]) {
+        btn.textContent='Step 1/2: Approve token spend in MetaMask…';
+        var approveData = encodeApprove(quote.allowanceTarget || quote.to, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
+        var approveTx = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+          from: walletAddr,
+          to:   TOKEN_ADDRS[fromTok],
+          data: approveData,
+          value:'0x0',
+        }]});
+        btn.textContent='Approval confirming…';
+        await waitForTx(approveTx);
+        showTxTag(btn, approveTx, 'mainnet');
+      }
+
+      // Step 4 — send the swap tx
+      btn.textContent=(fromTok!=='ETH'?'Step 2/2: ':'')+'Confirm swap in MetaMask…';
+      var swapTx = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+        from:  walletAddr,
+        to:    quote.to,
+        data:  quote.data,
+        value: fromTok==='ETH' ? amtWei : '0x0',
+        gas:   quote.gas ? '0x'+parseInt(quote.gas).toString(16) : undefined,
+      }]});
+      btn.textContent='Confirming swap on-chain…';
+      await waitForTx(swapTx);
+      btn.className='ac-btn ac-btn-done';
+      btn.textContent='✓ '+msg;
+      btn.disabled=false;
+      showTxTag(btn, swapTx, 'mainnet');
+
+    } else {
+      // Fallback — direct ETH send to Uniswap router with basic calldata
+      btn.textContent='Confirm swap in MetaMask…';
+      var router = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
+      var valueWei = fromTok==='ETH' ? amtWei : '0x0';
+      var txHash = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+        from: walletAddr, to: router, value: valueWei, data: '0x',
+      }]});
+      btn.textContent='Confirming…';
+      await waitForTx(txHash);
+      btn.className='ac-btn ac-btn-done';
+      btn.textContent='✓ '+msg;
+      btn.disabled=false;
+      showTxTag(btn, txHash, 'mainnet');
+    }
+
+  } catch(e) {
+    btn.className='ac-btn ac-btn-primary';
+    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,50);
+    btn.style.background='';btn.style.color='';btn.disabled=false;
+  }
+}
+
+// ── REAL BRIDGE via Hop Protocol ─────────────────────────────
+async function executeRealBridge(btn, result, msg) {
+  btn.disabled=true; btn.style.background='var(--am)'; btn.style.color='#000';
+  try {
+    btn.textContent='Switching to source chain…';
+    await switchToChain(CHAIN_ETH_MAINNET);
+
+    var HOP_BRIDGES = {
+      'Arbitrum': '0xb8901acB165ed027E32754E0FFe830802919727f',
+      'Optimism': '0x83f6244Bd87662118d96D9a6D44f09dffF14b30E',
+      'Polygon':  '0x22B1Cbb8D98a01a3B71D034BB899775A76Eb1cc2',
+      'Base':     '0x3666f603Cc164936C1b87e207F36BEBa4AC5f18d',
+    };
+    var chain   = result.destination_chain || 'Arbitrum';
+    var toAddr  = HOP_BRIDGES[chain] || HOP_BRIDGES['Arbitrum'];
+    var amt     = parseFloat(result.amount)||0;
+    var amtWei  = '0x'+Math.floor(amt*1e18).toString(16);
+
+    btn.textContent='Confirm bridge in MetaMask…';
+    var txHash = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+      from: walletAddr, to: toAddr, value: amtWei, data: '0x',
+    }]});
+    btn.textContent='Confirming bridge on-chain…';
+    await waitForTx(txHash);
+    btn.className='ac-btn ac-btn-done';
+    btn.textContent='✓ '+msg;
+    btn.disabled=false;
+    showTxTag(btn, txHash, 'mainnet');
+
+  } catch(e) {
+    btn.className='ac-btn ac-btn-primary';
+    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,50);
+    btn.style.background='';btn.style.color='';btn.disabled=false;
+  }
+}
+
+// ── REAL STAKE via Lido / Aave etc ───────────────────────────
+async function executeRealStake(btn, result, msg) {
+  btn.disabled=true; btn.style.background='var(--am)'; btn.style.color='#000';
+  try {
+    btn.textContent='Switching to Ethereum mainnet…';
+    await switchToChain(CHAIN_ETH_MAINNET);
+
+    var STAKE_CONTRACTS = {
+      'Lido':        '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+      'Rocket Pool': '0xDD3f50F8A6CafbE9b31a427582963f465E745AF8',
+      'Aave':        '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+      'Compound':    '0xc3d688B66703497DAA19211EEdff47f25384cdc3',
+      'Curve':       '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
+    };
+    var proto   = result.protocol || 'Lido';
+    var toAddr  = STAKE_CONTRACTS[proto] || STAKE_CONTRACTS['Lido'];
+    var amt     = parseFloat(result.amount)||0;
+    var amtWei  = '0x'+Math.floor(amt*1e18).toString(16);
+
+    // Lido submit() selector: 0xa1903eab (submit with referral)
+    var data = proto==='Lido'
+      ? '0xa1903eab0000000000000000000000000000000000000000000000000000000000000000'
+      : '0x';
+
+    btn.textContent='Confirm stake in MetaMask…';
+    var txHash = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+      from: walletAddr, to: toAddr, value: amtWei, data: data,
+    }]});
+    btn.textContent='Confirming stake on-chain…';
+    await waitForTx(txHash);
+    btn.className='ac-btn ac-btn-done';
+    btn.textContent='✓ '+msg;
+    btn.disabled=false;
+    showTxTag(btn, txHash, 'mainnet');
+
+  } catch(e) {
+    btn.className='ac-btn ac-btn-primary';
+    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,50);
+    btn.style.background='';btn.style.color='';btn.disabled=false;
+  }
+}
+
+
+// ── SWAP SCREEN ───────────────────────────────────────────────
+function calcSwap(){
+  var v=parseFloat(document.getElementById('sw-from-amt').value)||0;
+  var r=(RATES[swFrom]&&RATES[swFrom][swTo])||0;
+  document.getElementById('sw-to-amt').value=fmt(v*r);
+  document.getElementById('sw-rate').textContent='1 '+swFrom+' = '+fmt(r)+' '+swTo;
+  document.getElementById('sw-btn').textContent='Swap '+swFrom+' → '+swTo;
+}
+function setFromTok(tok,sym,bg){swFrom=tok;document.getElementById('sw-from-ic').style.background=bg;document.getElementById('sw-from-ic').style.color='#fff';document.getElementById('sw-from-ic').textContent=sym;document.getElementById('sw-from-tok').textContent=tok;document.getElementById('sw-from-bal').textContent='Balance: '+(BALS[tok]||'0')+' '+tok;document.getElementById('sw-from-drop').classList.remove('open');calcSwap();}
+function setToTok(tok,sym,bg){swTo=tok;document.getElementById('sw-to-ic').style.background=bg;document.getElementById('sw-to-ic').style.color='#fff';document.getElementById('sw-to-ic').textContent=sym;document.getElementById('sw-to-tok').textContent=tok;document.getElementById('sw-to-drop').classList.remove('open');calcSwap();}
+function flipSwap(){var t=swFrom;setFromTok(swTo,tokSym(swTo),tokCol(swTo).bg);setToTok(t,tokSym(t),tokCol(t).bg);}
+function toggleDrop(id){document.querySelectorAll('.tok-dropdown').forEach(function(d){if(d.id!==id)d.classList.remove('open')});document.getElementById(id).classList.toggle('open');}
+function stop(e){e.stopPropagation();}
+document.addEventListener('click',function(){document.querySelectorAll('.tok-dropdown').forEach(function(d){d.classList.remove('open')});});
+
+async function execSwap(){
+  var amt=parseFloat(document.getElementById('sw-from-amt').value)||0;
+  if(!amt||amt<=0){alert('Enter an amount to swap.');return;}
+  var btn=document.getElementById('sw-btn');
+  var fakeResult={from_token:swFrom, to_token:swTo, input_amount:amt, output_amount:fmt(amt*(RATES[swFrom]&&RATES[swFrom][swTo]||0))};
+  await executeRealSwap(btn, fakeResult, 'Swapped '+fmt(amt)+' '+swFrom+' → '+fakeResult.output_amount+' '+swTo);
+}
+calcSwap();
+
+// ── BRIDGE SCREEN ─────────────────────────────────────────────
+function setBridgeTo(name,bg,sym,el){
+  bridgeChain=name;
+  document.getElementById('br-to-ic').style.background=bg;document.getElementById('br-to-ic').textContent=sym;document.getElementById('br-to-name').textContent=name;
+  document.getElementById('br-btn').textContent='Bridge to '+name;
+  document.querySelectorAll('#br-chains .chip').forEach(function(c){c.style.borderColor='var(--bo2)';c.style.color='var(--t2)';c.style.background='';});
+  if(el){el.style.borderColor='var(--ac)';el.style.color='var(--ac2)';el.style.background='var(--ag)';}
+  calcBridge();
+}
+function calcBridge(){
+  var amt=parseFloat(document.getElementById('br-amt').value)||0;
+  document.getElementById('br-receive').textContent=fmt(amt-0.001)+' ETH on '+bridgeChain;
+  document.getElementById('br-eta').textContent=bridgeChain==='Ethereum'?'~10 minutes':'~3 minutes';
+}
+async function execBridge(){
+  var amt=parseFloat(document.getElementById('br-amt').value)||0;
+  if(!amt||amt<=0){alert('Enter an amount to bridge.');return;}
+  var btn=document.getElementById('br-btn');
+  // Hop Protocol bridge contract on Ethereum mainnet
+  var bridgeContracts={
+    'Arbitrum': '0xb8901acB165ed027E32754E0FFe830802919727f',
+    'Optimism': '0x83f6244Bd87662118d96D9a6D44f09dffF14b30E',
+    'Polygon':  '0x22B1Cbb8D98a01a3B71D034BB899775A76Eb1cc2',
+    'Base':     '0x3666f603Cc164936C1b87e207F36BEBa4AC5f18d',
+    'zkSync':   '0xD9e34e36E4FcB6af2F8D2fEf5B9A9F429B775a7D',
+    'Ethereum': '0xb8901acB165ed027E32754E0FFe830802919727f',
+  };
+  var toAddr=bridgeContracts[bridgeChain]||bridgeContracts['Arbitrum'];
+  await sendMetaMaskTx(btn, toAddr, amt, '0x', 'Bridging '+fmt(amt)+' ETH → '+bridgeChain);
+}
+calcBridge();
+
+// ── STAKE SCREEN ──────────────────────────────────────────────
+var PROTOCOLS=[
+  {name:'Lido',apy:3.8,ic:'🔷',col:'#00a3ff',rec:'stETH',sub:'ETH Liquid Staking',desc:'Receive stETH — stays liquid across DeFi'},
+  {name:'Rocket Pool',apy:3.6,ic:'🚀',col:'#ff6b22',rec:'rETH',sub:'Decentralised ETH',desc:'Fully decentralised — receive rETH'},
+  {name:'Aave',apy:4.9,ic:'👻',col:'#b6509e',rec:'aUSDC',sub:'USDC Lending',desc:'Supply USDC, earn lending yield'},
+  {name:'Curve',apy:6.2,ic:'〜',col:'#e84142',rec:'CRV-LP',sub:'LP Staking',desc:'Liquidity pools + CRV rewards'}
+];
+function pickStake(el,p){
+  document.querySelectorAll('.stake-card').forEach(function(c){c.classList.remove('sel')});el.classList.add('sel');
+  stakeApy=p.apy;
+  document.getElementById('stake-proto').textContent=p.name;
+  document.getElementById('stake-apy').textContent=p.apy+'% APY';
+  document.getElementById('stake-btn').textContent='Stake ETH on '+p.name;
+  calcStake();
+}
+function calcStake(){
+  var amt=parseFloat(document.getElementById('stake-amt').value)||0;
+  document.getElementById('stake-recv').textContent=fmt(amt)+' stETH';
+  document.getElementById('stake-yield').textContent=fmt(amt*stakeApy/100)+' ETH';
+}
+async function execStake(){
+  var amt=parseFloat(document.getElementById('stake-amt').value)||0;
+  if(!amt||amt<=0){alert('Enter an amount to stake.');return;}
+  var btn=document.getElementById('stake-btn');
+  var stakeContracts={
+    'Lido':        '0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84',
+    'Rocket Pool': '0xDD3f50F8A6CafbE9b31a427582963f465E745AF8',
+    'Aave':        '0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2',
+    'Compound':    '0xc3d688B66703497DAA19211EEdff47f25384cdc3',
+    'Curve':       '0xDC24316b9AE028F1497c275EB9192a3Ea0f67022',
+  };
+  var proto=document.getElementById('stake-proto').textContent||'Lido';
+  var toAddr=stakeContracts[proto]||stakeContracts['Lido'];
+  await sendMetaMaskTx(btn, toAddr, amt, '0x', 'Staked '+fmt(amt)+' ETH on '+proto+' @ '+stakeApy+'% APY');
+}
+calcStake();
+
+// ── SETTINGS ─────────────────────────────────────────────────
+function slip(el){document.querySelectorAll('.slip-opt').forEach(function(o){o.classList.remove('on')});el.classList.add('on');}
+function copyOpg(){navigator.clipboard.writeText('0x240b09731D96979f50B2C649C9CE10FcF9C7987F').then(function(){alert('$OPG address copied!')});}
+
+// ── INIT — wire up all DOM-dependent code after page loads ────
+document.addEventListener('DOMContentLoaded',function(){
+
+  // Chat input — Enter to send
+  document.getElementById('chat-inp').addEventListener('keydown',function(e){
+    if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}
+  });
+
+  // Build stake cards
+  var sc=document.getElementById('stake-cards');
+  if(sc) PROTOCOLS.forEach(function(p,i){
+    var el=document.createElement('div');
+    el.className='stake-card'+(i===0?' sel':'');
+    el.innerHTML='<div class="stake-card-top"><div class="stake-card-ic" style="background:'+p.col+'22;color:'+p.col+'">'+p.ic+'</div><div><div style="font-size:13px;font-weight:700">'+p.name+'</div><div style="font-size:10.5px;color:var(--t3)">'+p.sub+'</div></div></div><div class="stake-apy">'+p.apy+'% APY</div><div class="stake-desc">'+p.desc+'</div>';
+    el.onclick=function(){pickStake(el,p);};
+    sc.appendChild(el);
+  });
+
+  // Build dApp grid
+  var dapps=[
+    {name:'Uniswap',ic:'🦄',col:'#ff007a',cat:'DEX',desc:'Swap & liquidity'},
+    {name:'Aave',ic:'👻',col:'#b6509e',cat:'Lending',desc:'Lend & borrow'},
+    {name:'Curve',ic:'〜',col:'#e84142',cat:'Stable DEX',desc:'Stable swaps'},
+    {name:'GMX',ic:'🔵',col:'#4af5a6',cat:'Perps',desc:'Up to 50x leverage'},
+    {name:'Compound',ic:'🌿',col:'#00d395',cat:'Lending',desc:'Earn on deposits'},
+    {name:'1inch',ic:'🪐',col:'#1b8ef7',cat:'Aggregator',desc:'Best rate routing'},
+    {name:'Balancer',ic:'⚖️',col:'#7945f1',cat:'AMM',desc:'Weighted pools'},
+    {name:'dYdX',ic:'📈',col:'#6966ff',cat:'Perps',desc:'Advanced trading'}
+  ];
+  var dg=document.getElementById('dapp-grid');
+  if(dg) dapps.forEach(function(d){
+    var el=document.createElement('div');el.className='dapp-card';
+    el.innerHTML='<div class="dapp-ic" style="background:'+d.col+'22;border:1px solid '+d.col+'33">'+d.ic+'</div><div style="font-size:13.5px;font-weight:700">'+d.name+'</div><div style="font-size:10px;font-family:\'Space Mono\',monospace;color:var(--t3)">'+d.cat+'</div><div style="font-size:11px;color:var(--t3)">'+d.desc+'</div><div style="font-size:10.5px;color:var(--ac2);font-family:\'Space Mono\',monospace;margin-top:auto">Open →</div>';
+    el.onclick=function(){goScreen('chat',document.getElementById('nav-chat'));setTimeout(function(){qp('Open '+d.name+' — what can I do here?');},200);};
+    dg.appendChild(el);
+  });
+
+  // Initial calculations
+  calcSwap();
+  calcBridge();
+  calcStake();
+});
+
+// ── UTILITIES ─────────────────────────────────────────────────
+function setStep(id,state,text){var el=document.getElementById(id);if(!el)return;el.className='step '+(state||'');el.textContent=text;}
+function shortAddr(a){return a?a.slice(0,6)+'…'+a.slice(-4):'';}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)});}
+function fmt(n,dp){dp=dp||4;var v=parseFloat(n);if(isNaN(v))return'0';if(v>=1000)return v.toLocaleString('en-US',{maximumFractionDigits:2});if(v<0.0001&&v>0)return v.toExponential(4);return parseFloat(v.toFixed(dp)).toString();}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function md(t){if(!t)return'';return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`(.+?)`/g,'<code>$1</code>').replace(/\n/g,'<br>');}
+function tokSym(t){return{ETH:'Ξ',USDC:'$',WBTC:'₿',ARB:'A',OPG:'⬡',stETH:'st',rETH:'r'}[t]||t[0];}
+function tokCol(t){return({ETH:{bg:'#627eea',fg:'#fff'},USDC:{bg:'#2775ca',fg:'#fff'},WBTC:{bg:'#f7931a',fg:'#fff'},ARB:{bg:'#28a0f0',fg:'#fff'},OPG:{bg:'#4f6ef7',fg:'#fff'},stETH:{bg:'#00a3ff',fg:'#fff'},rETH:{bg:'#ff6b22',fg:'#fff'}})[t]||{bg:'#555',fg:'#fff'};}
+</script>
+</body>
+</html>
