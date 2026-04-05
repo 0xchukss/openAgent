@@ -714,22 +714,36 @@ async function switchToChain(chainHex) {
 }
 
 // ── GET SWAP CALLDATA from 0x API ─────────────────────────────
-async function getSwapCalldata(fromToken, toToken, amountWei, slippageBps) {
-  // 0x Swap API v2 — free, no key needed for basic usage
-  var sellToken = fromToken === 'ETH' ? 'ETH' : (TOKEN_ADDRS[fromToken] || fromToken);
-  var buyToken  = toToken  === 'ETH' ? 'ETH' : (TOKEN_ADDRS[toToken]  || toToken);
-  var url = 'https://api.0x.org/swap/v1/quote?' +
-    'sellToken=' + sellToken +
-    '&buyToken=' + buyToken +
-    '&sellAmount=' + amountWei +
-    '&slippagePercentage=' + (slippageBps / 10000) +
-    '&takerAddress=' + walletAddr;
-  try {
-    var resp = await fetch(url, {headers: {'0x-api-key': ''}});
-    if(!resp.ok) throw new Error('0x API error: ' + resp.status);
-    return await resp.json();
-  } catch(e) {
-    throw new Error('Could not get swap quote: ' + e.message);
+// Using Uniswap v2 router directly — no API key needed
+var UNISWAP_V2_ROUTER = '0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D';
+var WETH_ADDR = '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2';
+
+function pad64(hex) {
+  return hex.replace('0x','').toLowerCase().padStart(64,'0');
+}
+
+function buildSwapCalldata(fromTok, toTok, amtWei, deadline, recipient) {
+  var sellAddr = fromTok==='ETH' ? WETH_ADDR : (TOKEN_ADDRS[fromTok]||WETH_ADDR);
+  var buyAddr  = toTok==='ETH'   ? WETH_ADDR : (TOKEN_ADDRS[toTok]||TOKEN_ADDRS['USDC']);
+  var deadlineHex = pad64(BigInt(deadline).toString(16));
+  var minOut      = pad64('0'); // accept any output
+  var recip       = pad64(recipient.toLowerCase());
+  var amtHex      = pad64(BigInt(amtWei).toString(16));
+  // path array: offset=0xa0, length=2, addr1, addr2
+  var pathOffset  = pad64(BigInt(0xa0).toString(16));
+  var pathLen     = pad64(BigInt(2).toString(16));
+  var addr1       = pad64(sellAddr.replace('0x',''));
+  var addr2       = pad64(buyAddr.replace('0x',''));
+
+  if(fromTok==='ETH') {
+    // swapExactETHForTokens(uint amountOutMin, address[] path, address to, uint deadline)
+    return '0x7ff36ab5' + minOut + pathOffset + recip + deadlineHex + pathLen + addr1 + addr2;
+  } else if(toTok==='ETH') {
+    // swapExactTokensForETH(uint amountIn, uint amountOutMin, address[] path, address to, uint deadline)
+    return '0x18cbafe5' + amtHex + minOut + pathOffset + recip + deadlineHex + pathLen + addr1 + addr2;
+  } else {
+    // swapExactTokensForTokens(uint amountIn, uint amountOutMin, address[] path, address to, uint deadline)
+    return '0x38ed1739' + amtHex + minOut + pathOffset + recip + deadlineHex + pathLen + addr1 + addr2;
   }
 }
 
@@ -813,81 +827,52 @@ async function confirmTx(cardId, msg, toolName, result){
   }
 }
 
-// ── REAL SWAP via 0x API ──────────────────────────────────────
+// ── REAL SWAP via Uniswap v2 Router ──────────────────────────
 async function executeRealSwap(btn, result, msg) {
   btn.disabled=true; btn.style.background='var(--am)'; btn.style.color='#000';
   try {
-    // Step 1 — switch to Ethereum mainnet
     btn.textContent='Switching to Ethereum mainnet…';
     await switchToChain(CHAIN_ETH_MAINNET);
 
-    var fromTok = (result.from_token||'ETH').toUpperCase();
-    var toTok   = (result.to_token||'USDC').toUpperCase();
-    var amt     = parseFloat(result.input_amount)||0;
-    var amtWei  = '0x'+Math.floor(amt*1e18).toString(16);
+    var fromTok  = (result.from_token||'ETH').toUpperCase();
+    var toTok    = (result.to_token||'USDC').toUpperCase();
+    var amt      = parseFloat(result.input_amount)||0;
+    var amtWei   = BigInt(Math.floor(amt * 1e18));
+    var deadline = Math.floor(Date.now()/1000) + 1200;
 
-    // Step 2 — get swap quote from 0x
-    btn.textContent='Getting best swap route…';
-    var quote;
-    try {
-      quote = await getSwapCalldata(fromTok, toTok, amtWei, 50); // 0.5% slippage
-    } catch(e) {
-      // 0x API failed — fall back to direct Uniswap router call
-      quote = null;
+    // If ERC-20 input — approve router first
+    if(fromTok !== 'ETH' && TOKEN_ADDRS[fromTok]) {
+      btn.textContent='Step 1/2: Approve '+fromTok+' spend in MetaMask…';
+      var MAX = 'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
+      var approveData = '0x095ea7b3' + pad64(UNISWAP_V2_ROUTER.replace('0x','')) + MAX;
+      var approveTx = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+        from:walletAddr, to:TOKEN_ADDRS[fromTok], data:approveData, value:'0x0'
+      }]});
+      btn.textContent='Waiting for approval confirmation…';
+      await waitForTx(approveTx);
+      showTxTag(btn, approveTx, 'mainnet');
     }
 
-    if(quote && quote.to && quote.data) {
-      // Step 3a — approve ERC-20 if needed
-      if(fromTok !== 'ETH' && TOKEN_ADDRS[fromTok]) {
-        btn.textContent='Step 1/2: Approve token spend in MetaMask…';
-        var approveData = encodeApprove(quote.allowanceTarget || quote.to, '0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff');
-        var approveTx = await window.ethereum.request({method:'eth_sendTransaction', params:[{
-          from: walletAddr,
-          to:   TOKEN_ADDRS[fromTok],
-          data: approveData,
-          value:'0x0',
-        }]});
-        btn.textContent='Approval confirming…';
-        await waitForTx(approveTx);
-        showTxTag(btn, approveTx, 'mainnet');
-      }
+    // Build and send swap tx
+    var calldata = buildSwapCalldata(fromTok, toTok, amtWei.toString(16), deadline, walletAddr);
+    var value    = fromTok==='ETH' ? '0x'+amtWei.toString(16) : '0x0';
+    var step     = fromTok!=='ETH' ? 'Step 2/2: ' : '';
 
-      // Step 4 — send the swap tx
-      btn.textContent=(fromTok!=='ETH'?'Step 2/2: ':'')+'Confirm swap in MetaMask…';
-      var swapTx = await window.ethereum.request({method:'eth_sendTransaction', params:[{
-        from:  walletAddr,
-        to:    quote.to,
-        data:  quote.data,
-        value: fromTok==='ETH' ? amtWei : '0x0',
-        gas:   quote.gas ? '0x'+parseInt(quote.gas).toString(16) : undefined,
-      }]});
-      btn.textContent='Confirming swap on-chain…';
-      await waitForTx(swapTx);
-      btn.className='ac-btn ac-btn-done';
-      btn.textContent='✓ '+msg;
-      btn.disabled=false;
-      showTxTag(btn, swapTx, 'mainnet');
-
-    } else {
-      // Fallback — direct ETH send to Uniswap router with basic calldata
-      btn.textContent='Confirm swap in MetaMask…';
-      var router = '0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45';
-      var valueWei = fromTok==='ETH' ? amtWei : '0x0';
-      var txHash = await window.ethereum.request({method:'eth_sendTransaction', params:[{
-        from: walletAddr, to: router, value: valueWei, data: '0x',
-      }]});
-      btn.textContent='Confirming…';
-      await waitForTx(txHash);
-      btn.className='ac-btn ac-btn-done';
-      btn.textContent='✓ '+msg;
-      btn.disabled=false;
-      showTxTag(btn, txHash, 'mainnet');
-    }
+    btn.textContent=step+'Confirm swap in MetaMask…';
+    var txHash = await window.ethereum.request({method:'eth_sendTransaction', params:[{
+      from:walletAddr, to:UNISWAP_V2_ROUTER, data:calldata, value:value
+    }]});
+    btn.textContent='Confirming on Ethereum…';
+    await waitForTx(txHash);
+    btn.className='ac-btn ac-btn-done';
+    btn.textContent='✓ '+msg;
+    btn.disabled=false;
+    showTxTag(btn, txHash, 'mainnet');
 
   } catch(e) {
     btn.className='ac-btn ac-btn-primary';
-    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,50);
-    btn.style.background='';btn.style.color='';btn.disabled=false;
+    btn.textContent=e.code===4001?'Rejected — try again':'Error: '+e.message.slice(0,60);
+    btn.style.background=''; btn.style.color=''; btn.disabled=false;
   }
 }
 
